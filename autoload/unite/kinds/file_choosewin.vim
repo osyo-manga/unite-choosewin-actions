@@ -36,7 +36,7 @@ function! unite#kinds#file_choosewin#start(action, candidate)
 endfunction
 
 
-function! unite#kinds#file_choosewin#regist_action(action, ...)
+function! unite#kinds#file_choosewin#register_action(action, ...)
 	let kind = get(a:, 1, "file")
 	let action = {
 	\	'is_selectable' : 0,
@@ -51,9 +51,9 @@ function! unite#kinds#file_choosewin#regist_action(action, ...)
 endfunction
 
 
-call unite#kinds#file_choosewin#regist_action("open")
-call unite#kinds#file_choosewin#regist_action("split")
-call unite#kinds#file_choosewin#regist_action("vsplit")
+call unite#kinds#file_choosewin#register_action("open")
+call unite#kinds#file_choosewin#register_action("split")
+call unite#kinds#file_choosewin#register_action("vsplit")
 
 
 " choosewin/user
