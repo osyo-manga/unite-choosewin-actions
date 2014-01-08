@@ -20,12 +20,21 @@ endfunction
 " let g:Unite#kinds#file_choosewin#is_ignore_window_func = get(g:, "Unite#kinds#file_choosewin#is_ignore_window_func", function("s:dummy_is_ignore_window"))
 let g:Unite_kinds_choosewin_is_ignore_window_func = get(g:, "Unite_kinds_choosewin_is_ignore_window_func", function("s:dummy_is_ignore_window"))
 
+let s:default_choosewin_config = { "auto_choose" : 1 }
+let g:unite#kinds#file_choosewin#choosewin_config = get(g:, "unite#kinds#file_choosewin#choosewin_config", {})
+
+
+function! s:get_choosewin_config(...)
+	let config = get(a:, 1, {})
+	return extend(deepcopy(s:default_choosewin_config), extend(deepcopy(g:unite#kinds#file_choosewin#choosewin_config), config))
+endfunction
+
 
 function! unite#kinds#file_choosewin#start(action, candidate)
 	let old = g:choosewin_return_on_single_win
 	let g:choosewin_return_on_single_win = 0
 	try
-		let window = choosewin#start(filter(range(1, winnr('$')), '!g:Unite_kinds_choosewin_is_ignore_window_func(a:action, v:val)'), 1)
+		let window = choosewin#start(filter(range(1, winnr('$')), '!g:Unite_kinds_choosewin_is_ignore_window_func(a:action, v:val)'), s:get_choosewin_config())
 		if empty(window)
 			return
 		endif
@@ -39,12 +48,14 @@ endfunction
 function! unite#kinds#file_choosewin#register_action(action, ...)
 	let kind = get(a:, 1, "file")
 	let action = {
-	\	'is_selectable' : 0,
+	\	'is_selectable' : 1,
 	\	"choosewin_action" : a:action
 	\}
 
-	function! action.func(candidate)
-		call unite#kinds#file_choosewin#start(self.choosewin_action, a:candidate)
+	function! action.func(candidates)
+		for candidate in a:candidates
+			call unite#kinds#file_choosewin#start(self.choosewin_action, candidate)
+		endfor
 	endfunction
 
 	call unite#custom_action(kind, 'choosewin/' . a:action, action)
@@ -58,14 +69,16 @@ call unite#kinds#file_choosewin#register_action("vsplit")
 
 " choosewin/user
 let s:action = {
-\	'is_selectable' : 0
+\	'is_selectable' : 1
 \}
 
-function! s:action.func(candidate)
+function! s:action.func(candidates)
 	if empty(g:unite#kinds#file_choosewin#user_action)
 		return
 	endif
-	call unite#kinds#file_choosewin#start(g:unite#kinds#file_choosewin#user_action, a:candidate)
+	for candidate in a:candidates
+		call unite#kinds#file_choosewin#start(self.choosewin_action, candidate)
+	endfor
 endfunction
 
 call unite#custom_action('file', 'choosewin/user', s:action)
